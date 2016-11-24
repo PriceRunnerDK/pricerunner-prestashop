@@ -38,6 +38,7 @@
      */
     if (isNewerPrestashopVersion() && Shop::isFeatureActive()) {
         Shop::setContext(Shop::CONTEXT_SHOP, $shopId);
+        $context = Context::getContext();
         $context->shop = new Shop($shopId);
     }
 
