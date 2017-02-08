@@ -241,9 +241,9 @@ class ProductFetcher
         if (!empty($image)) {
             // Yes, prestashop fixed a typo here, without deprecating the function...
             if (method_exists('ImageType', 'getFormattedName')) {
-                $imageUrl = (!$this->sslEnabled ? 'http://' : 'https://') . Link::getImageLink($product->link_rewrite, $image['id_image'], ImageType::getFormattedName('large'));
+                $imageUrl = (!$this->sslEnabled ? 'http://' : 'https://') . $this->link->getImageLink($product->link_rewrite, $image['id_image'], ImageType::getFormattedName('large'));
             } else {
-                $imageUrl = (!$this->sslEnabled ? 'http://' : 'https://') . Link::getImageLink($product->link_rewrite, $image['id_image'], ImageType::getFormatedName('large'));
+                $imageUrl = (!$this->sslEnabled ? 'http://' : 'https://') . $this->link->getImageLink($product->link_rewrite, $image['id_image'], ImageType::getFormatedName('large'));
             }
         }
 
@@ -256,7 +256,10 @@ class ProductFetcher
         $pricerunnerProduct->setSku($productData['id_product']);
         $pricerunnerProduct->setPrice(round($product->getPrice(), 2));
         $pricerunnerProduct->setProductUrl($productLink);
-        $pricerunnerProduct->setManufacturerSku($product->id_manufacturer);
+
+        // Not a good solution. Rather send no data than invalid data.
+        // $pricerunnerProduct->setManufacturerSku($product->id_manufacturer);
+
         $pricerunnerProduct->setManufacturer($product->manufacturer_name);
         $pricerunnerProduct->setEan($product->ean13);
 
@@ -272,10 +275,12 @@ class ProductFetcher
         $pricerunnerProduct->setProductState($product->condition);
 
         $products = array($pricerunnerProduct);
-        $productCombinations = $this->getProductCombinations($pricerunnerProduct, $product);
 
+        // Combinations should be disable as the other OpenSource modules don't use combinations.
+        // $productCombinations = $this->getProductCombinations($pricerunnerProduct, $product);
         // Return combinations if product has combinations, otherwise just return the product.
-        return count($productCombinations) > 0 ? $productCombinations : $products;
+        // return count($productCombinations) > 0 ? $productCombinations : $products;
+        return $products;
     }
 
 }

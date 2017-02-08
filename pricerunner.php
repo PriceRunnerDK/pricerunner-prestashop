@@ -14,7 +14,11 @@
         exit;
     }
 
-    require_once(dirname(__FILE__) . '/PricerunnerSDK/files.php');
+    if (!defined('PRICRUNNER_OFFICIAL_PLUGIN_VERSION')) {
+        define('PRICRUNNER_OFFICIAL_PLUGIN_VERSION', 'prestashop-v1.0.4');
+    }
+
+    require_once(dirname(__FILE__) . '/pricerunner-php-sdk/src/files.php');
 
     require_once(dirname(__FILE__) . '/classes/prestashopProductValidator.php');
     require_once(dirname(__FILE__) . '/classes/prestashopProductCollectionValidator.php');
@@ -35,7 +39,7 @@
         {
             $this->name = 'pricerunner';
             $this->tab = 'smart_shopping';
-            $this->version = '1.0.2';
+            $this->version = '1.0.4';
             $this->author = 'Pricerunner';
             $this->need_instance = 0;
             // $this->ps_versions_compliancy = array(/*'min' => '1.4', 'max' => _PS_VERSION_*/);
@@ -47,23 +51,6 @@
             $this->description = $this->l('Generates feeds for pricerunner price matching.');
 
             $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
-
-            $pricerunnerFeedUrl = Configuration::get('PRICERUNNER_FEED_URL');
-            if (empty($pricerunnerFeedUrl)) {
-                $randomString = \PricerunnerSDK\PricerunnerSDK::getRandomString();
-
-                $feedPath = dirname(__FILE__) . '/feed/' . $randomString . '.xml';
-                $feedUrl = _PS_BASE_URL_ . _MODULE_DIR_ . $this->name . '/feed.php?hash=' . $randomString;
-
-                // Add shopId to URL
-                if (isNewerPrestashopVersion() && Shop::isFeatureActive()) {
-                    $feedUrl .= "&shop_id=" . $this->context->shop->id;
-                }
-
-                Configuration::updateValue('PRICERUNNER_FEED_PATH', $feedPath);
-                Configuration::updateValue('PRICERUNNER_FEED_URL', $feedUrl);
-                Configuration::updateValue('PRICERUNNER_FEED_HASH', $randomString);
-            }
         }
 
         /**
@@ -118,6 +105,8 @@
                 }
             }
 
+            $this->createHashIfEmpty();
+
             $pricerunnerPluginActivated = Configuration::get('PRICERUNNER_PLUGIN_ACTIVATED');
             if (empty($pricerunnerPluginActivated)) {
                 $this->html .= $this->displayExplainingInfo();
@@ -128,6 +117,27 @@
             }
 
             return $this->html;
+        }
+
+        private function createHashIfEmpty()
+        {
+            $pricerunnerFeedUrl = Configuration::get('PRICERUNNER_FEED_URL');
+            if (empty($pricerunnerFeedUrl)) {
+                $randomString = \PricerunnerSDK\PricerunnerSDK::getRandomString();
+
+                $feedPath = dirname(__FILE__) . '/feed/' . $randomString . '.xml';
+                $feedUrl = _PS_BASE_URL_ . _MODULE_DIR_ . $this->name . '/feed.php?hash=' . $randomString;
+
+                // Add shopId to URL
+                // TODO Fix multishop 
+                /*if (isNewerPrestashopVersion() && Shop::isFeatureActive()) {
+                    $feedUrl .= "&shop_id=" . $this->context->shop->id;
+                }*/
+
+                Configuration::updateValue('PRICERUNNER_FEED_PATH', $feedPath);
+                Configuration::updateValue('PRICERUNNER_FEED_URL', $feedUrl);
+                Configuration::updateValue('PRICERUNNER_FEED_HASH', $randomString);
+            }
         }
 
         /**
@@ -208,6 +218,10 @@
             Configuration::updateValue('PRICERUNNER_NAME', '');
             Configuration::updateValue('PRICERUNNER_PHONE', '');
             Configuration::updateValue('PRICERUNNER_MAIL', '');
+
+            Configuration::updateValue('PRICERUNNER_FEED_PATH', '');
+            Configuration::updateValue('PRICERUNNER_FEED_URL', '');
+            Configuration::updateValue('PRICERUNNER_FEED_HASH', '');
         }
 
 

@@ -10,11 +10,13 @@
      * file, You can obtain one at http://mozilla.org/MPL/2.0/.
     **/
 
+    define('PRICRUNNER_OFFICIAL_PLUGIN_VERSION', 'prestashop-v1.0.4');
+
     require_once(dirname(__FILE__) . '/../../config/config.inc.php');
     require_once(dirname(__FILE__) . '/../../init.php');
     require_once(dirname(__FILE__) . '/../../classes/Link.php');
 
-    require_once(dirname(__FILE__) . '/PricerunnerSDK/files.php');
+    require_once(dirname(__FILE__) . '/pricerunner-php-sdk/src/files.php');
 
     require_once(dirname(__FILE__) . '/classes/prestashopProductValidator.php');
     require_once(dirname(__FILE__) . '/classes/prestashopProductCollectionValidator.php');
@@ -24,10 +26,6 @@
 
     require_once(dirname(__FILE__) . '/helpers.php');
 
-    if (Tools::getIsset('shop_id')) {
-        $shopId = Tools::getValue('shop_id');
-    }
-
     /**
      * 
      * Set shop context before any interaction with Prestashop.
@@ -36,14 +34,19 @@
      * from Prestashop corresponds to the correct shop.
      * 
      */
-    if (isNewerPrestashopVersion() && Shop::isFeatureActive()) {
+    // TODO Fix multishop
+    /*if (Tools::getIsset('shop_id')) {
+        $shopId = Tools::getValue('shop_id');
+    }
+
+    if (isNewerPrestashopVersion() && Shop::isFeatureActive() && isset($shopId)) {
         Shop::setContext(Shop::CONTEXT_SHOP, $shopId);
         $context = Context::getContext();
         $context->shop = new Shop($shopId);
-    }
+    }*/
 
     if (!Module::getInstanceByName('pricerunner')->active) {
-        exit;
+        die('Module not active');
     }
 
     $shopId = null;
@@ -51,11 +54,11 @@
     $link = new PrestashopLinkExtension();
 
     if (!Tools::getIsset('hash')) {
-        exit;
+        die('No hash in request.');
     }
 
     if (Tools::getValue('hash') !== Configuration::get('PRICERUNNER_FEED_HASH')) {
-        exit;
+        die('Invalid hash');
     }
 
     $productFetcher = new ProductFetcher($context, $link);
@@ -75,6 +78,8 @@
     }
 
 
-    header("Content-Type:application/xml; charset=utf-8");
+    if (!headers_sent()) {
+        header("Content-Type:application/xml; charset=utf-8");
+    }
 
     echo $xmlString;
