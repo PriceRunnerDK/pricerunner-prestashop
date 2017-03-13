@@ -251,10 +251,13 @@ class ProductFetcher
 
         $productLink = $product->getLink();
 
+        $price = round($product->getPrice(), 2);
+        $price = sprintf("%.2F", $price);
+
         $pricerunnerProduct->setProductName(\PricerunnerSDK\PricerunnerSDK::getXmlReadyString($product->name));
         $pricerunnerProduct->setCategoryName(\PricerunnerSDK\PricerunnerSDK::getXmlReadyString($categoryName));
         $pricerunnerProduct->setSku($productData['id_product']);
-        $pricerunnerProduct->setPrice(round($product->getPrice(), 2));
+        $pricerunnerProduct->setPrice($price);
         $pricerunnerProduct->setProductUrl($productLink);
 
         // Not a good solution. Rather send no data than invalid data.
@@ -272,7 +275,7 @@ class ProductFetcher
         $pricerunnerProduct->setImageUrl($imageUrl);
         $pricerunnerProduct->setStockStatus($stockStatus);
 
-        $pricerunnerProduct->setProductState($product->condition);
+        $pricerunnerProduct->setProductState(ucfirst($product->condition));
 
         $products = array($pricerunnerProduct);
 
