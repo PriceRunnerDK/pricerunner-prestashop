@@ -10,11 +10,10 @@
      * file, You can obtain one at http://mozilla.org/MPL/2.0/.
     **/
 
-    define('PRICRUNNER_OFFICIAL_PLUGIN_VERSION', 'prestashop-v1.0.4');
+    define('PRICRUNNER_OFFICIAL_PLUGIN_VERSION', 'prestashop-v1.0.5');
 
     require_once(dirname(__FILE__) . '/../../config/config.inc.php');
     require_once(dirname(__FILE__) . '/../../init.php');
-    require_once(dirname(__FILE__) . '/../../classes/Link.php');
 
     require_once(dirname(__FILE__) . '/pricerunner-php-sdk/src/files.php');
 

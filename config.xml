@@ -2,7 +2,7 @@
 <module>
 	<name>pricerunner</name>
 	<displayName><![CDATA[Pricerunner XML Feed]]></displayName>
-	<version><![CDATA[1.0.4]]></version>
+	<version><![CDATA[1.0.5]]></version>
 	<description><![CDATA[Generates feeds for pricerunner price matching.]]></description>
 	<author><![CDATA[Pricerunner]]></author>
 	<tab><![CDATA[smart_shopping]]></tab>
