@@ -54,6 +54,26 @@
         }
 
         /**
+         * Completes registration of shop with Pricerunner.
+         * Allows for external execution.
+         * @return boolean, depending on outcome of postRegistration
+         */
+        public function completeRegistration() {
+          $pricerunnerName    = Configuration::get('PRICERUNNER_NAME');
+          $pricerunnerPhone   = Configuration::get('PRICERUNNER_PHONE');
+          $pricerunnerMail    = Configuration::get('PRICERUNNER_MAIL');
+          $pricerunnerDomain  = Configuration::get('PRICERUNNER_DOMAIN');
+          $pricerunnerFeedUrl = Configuration::get('PRICERUNNER_FEED_URL');
+          try {
+              \PricerunnerSDK\PricerunnerSDK::postRegistration($pricerunnerName, $pricerunnerPhone, $pricerunnerMail, $pricerunnerDomain, $pricerunnerFeedUrl);
+          } catch (Exception $e) {
+              $this->html .= $this->displayError($e->getMessage());
+              return false;
+          }
+          return true;
+        }
+
+        /**
          * Method that processes the API post of the user credentials
          */
         protected function postProcess()
@@ -62,24 +82,10 @@
             Configuration::updateValue('PRICERUNNER_NAME', Tools::getValue('PRICERUNNER_NAME'));
             Configuration::updateValue('PRICERUNNER_PHONE', Tools::getValue('PRICERUNNER_PHONE'));
             Configuration::updateValue('PRICERUNNER_MAIL', Tools::getValue('PRICERUNNER_MAIL'));
-
-            $pricerunnerDomain = _PS_BASE_URL_;
-            $pricerunnerFeedUrl = Configuration::get('PRICERUNNER_FEED_URL');
-
-            $pricerunnerName = Tools::getValue('PRICERUNNER_NAME');
-            $pricerunnerPhone = Tools::getValue('PRICERUNNER_PHONE');
-            $pricerunnerMail = Tools::getValue('PRICERUNNER_MAIL');
-
-            try {
-                \PricerunnerSDK\PricerunnerSDK::postRegistration($pricerunnerName, $pricerunnerPhone, $pricerunnerMail, $pricerunnerDomain, $pricerunnerFeedUrl);
-            } catch (Exception $e) {
-                $this->html .= $this->displayError($e->getMessage());
-                return;
+            if ($this->completeRegistration()) {
+              Configuration::updateValue('PRICERUNNER_PLUGIN_ACTIVATED', 1);
+              $this->html .= $this->displayConfirmation($this->l('Thank you for your application, you will be contacted by Pricerunner soon'));
             }
-
-            Configuration::updateValue('PRICERUNNER_PLUGIN_ACTIVATED', 1);
-
-            $this->html .= $this->displayConfirmation($this->l('Thank you for your application, you will be contacted by Pricerunner soon'));
         }
 
         public function getContent()
@@ -105,12 +111,10 @@
                 }
             }
 
-            $this->createHashIfEmpty();
-
             $pricerunnerPluginActivated = Configuration::get('PRICERUNNER_PLUGIN_ACTIVATED');
             if (empty($pricerunnerPluginActivated)) {
                 $this->html .= $this->displayExplainingInfo();
-            
+
                 $this->html .= $this->displayForm();
             } else {
                 $this->html .= $this->displayActivatedPluginView();
@@ -129,7 +133,7 @@
                 $feedUrl = _PS_BASE_URL_ . _MODULE_DIR_ . $this->name . '/feed.php?hash=' . $randomString;
 
                 // Add shopId to URL
-                // TODO Fix multishop 
+                // TODO Fix multishop
                 /*if (isNewerPrestashopVersion() && Shop::isFeatureActive()) {
                     $feedUrl .= "&shop_id=" . $this->context->shop->id;
                 }*/
@@ -201,8 +205,8 @@
             $viewBag = array(
                 'domain' => _PS_BASE_URL_,
                 'feedUrl' => Configuration::get('PRICERUNNER_FEED_URL'),
-                'name' => Configuration::get('PS_SHOP_NAME'),
-                'email' => Configuration::get('PS_SHOP_EMAIL')
+                'name' => Configuration::get('PRICERUNNER_NAME'),
+                'email' => Configuration::get('PRICERUNNER_MAIL')
             );
 
             return $this->getPopulatedView($view, $viewBag);
@@ -241,10 +245,24 @@
             return $view;
         }
 
+        /**
+         * Function that configures module database keys.
+         * For use on installation of module.
+         */
+        private function populateConfiguration()  {
+          Configuration::updateValue('PRICERUNNER_DOMAIN', _PS_BASE_URL_);
+          Configuration::updateValue('PRICERUNNER_NAME', Configuration::get('PS_SHOP_NAME'));
+          Configuration::updateValue('PRICERUNNER_MAIL', Configuration::get('PS_SHOP_EMAIL'));
+          $this->createHashIfEmpty();
+        }
+
 
         public function install()
         {
-            if (!parent::install()) {
+          if (
+            !parent::install() ||
+            !$this->populateConfiguration()
+          ) {
                 return false;
             }
 
