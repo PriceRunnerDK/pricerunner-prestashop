@@ -62,7 +62,7 @@ class ProductFetcher
         $db = Db::getInstance();
 
         if (!isNewerPrestashopVersion()) {
-            $sql = 'SELECT p.`id_product`, pl.`name`
+            $sql = 'SELECT p.`id_product`, p.`reference`, pl.`name`
                 FROM `' . _DB_PREFIX_ . 'product` p
                 LEFT JOIN `' . _DB_PREFIX_ . 'product_lang` pl ON (p.`id_product` = pl.`id_product`)
                 WHERE pl.`id_lang` = ' . (int)($langId) . ' AND p.`active`= 1 AND p.`available_for_order`= 1 AND p.`cache_is_pack` = 0
@@ -80,7 +80,7 @@ class ProductFetcher
         }
 
         $sql = 'SELECT 
-            p.`id_product`, pl.`name`
+            p.`id_product`, p.`reference`, pl.`name`
         FROM
             `' . _DB_PREFIX_ . 'product` p
             ' . Shop::addSqlAssociation('product', 'p') . '
@@ -256,7 +256,7 @@ class ProductFetcher
 
         $pricerunnerProduct->setProductName(\PricerunnerSDK\PricerunnerSDK::getXmlReadyString($product->name));
         $pricerunnerProduct->setCategoryName(\PricerunnerSDK\PricerunnerSDK::getXmlReadyString($categoryName));
-        $pricerunnerProduct->setSku($productData['id_product']);
+        $pricerunnerProduct->setSku($productData['reference']);
         $pricerunnerProduct->setPrice($price);
         $pricerunnerProduct->setProductUrl($productLink);
 
