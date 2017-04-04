@@ -10,7 +10,7 @@
      * file, You can obtain one at http://mozilla.org/MPL/2.0/.
     **/
 
-    define('PRICRUNNER_OFFICIAL_PLUGIN_VERSION', 'prestashop-v1.0.5');
+    define('PRICRUNNER_OFFICIAL_PLUGIN_VERSION', 'prestashop-v1.0.7');
 
     require_once(dirname(__FILE__) . '/../../config/config.inc.php');
     require_once(dirname(__FILE__) . '/../../init.php');
