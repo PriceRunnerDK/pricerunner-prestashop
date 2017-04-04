@@ -15,7 +15,7 @@
     }
 
     if (!defined('PRICRUNNER_OFFICIAL_PLUGIN_VERSION')) {
-        define('PRICRUNNER_OFFICIAL_PLUGIN_VERSION', 'prestashop-v1.0.4');
+        define('PRICRUNNER_OFFICIAL_PLUGIN_VERSION', 'prestashop-v1.0.7');
     }
 
     require_once(dirname(__FILE__) . '/pricerunner-php-sdk/src/files.php');
@@ -56,21 +56,32 @@
         /**
          * Completes registration of shop with Pricerunner.
          * Allows for external execution.
-         * @return boolean, depending on outcome of postRegistration
+         * @throws Exception
+         * @return bool
          */
-        public function completeRegistration() {
-          $pricerunnerName    = Configuration::get('PRICERUNNER_NAME');
-          $pricerunnerPhone   = Configuration::get('PRICERUNNER_PHONE');
-          $pricerunnerMail    = Configuration::get('PRICERUNNER_MAIL');
-          $pricerunnerDomain  = Configuration::get('PRICERUNNER_DOMAIN');
-          $pricerunnerFeedUrl = Configuration::get('PRICERUNNER_FEED_URL');
-          try {
-              \PricerunnerSDK\PricerunnerSDK::postRegistration($pricerunnerName, $pricerunnerPhone, $pricerunnerMail, $pricerunnerDomain, $pricerunnerFeedUrl);
-          } catch (Exception $e) {
-              $this->html .= $this->displayError($e->getMessage());
-              return false;
-          }
-          return true;
+        public function completeRegistration()
+        {
+            $pricerunnerName    = Configuration::get('PRICERUNNER_NAME');
+            $pricerunnerPhone   = Configuration::get('PRICERUNNER_PHONE');
+            $pricerunnerMail    = Configuration::get('PRICERUNNER_MAIL');
+            $pricerunnerDomain  = Configuration::get('PRICERUNNER_DOMAIN');
+            $pricerunnerFeedUrl = Configuration::get('PRICERUNNER_FEED_URL');
+
+            try {
+                \PricerunnerSDK\PricerunnerSDK::postRegistration(
+                    $pricerunnerName,
+                    $pricerunnerPhone,
+                    $pricerunnerMail,
+                    $pricerunnerDomain,
+                    $pricerunnerFeedUrl
+                );
+            }
+            catch (Exception $e) {
+                $this->html .= $this->displayError($e->getMessage());
+                return false;
+            }
+
+            return true;
         }
 
         /**
@@ -82,9 +93,10 @@
             Configuration::updateValue('PRICERUNNER_NAME', Tools::getValue('PRICERUNNER_NAME'));
             Configuration::updateValue('PRICERUNNER_PHONE', Tools::getValue('PRICERUNNER_PHONE'));
             Configuration::updateValue('PRICERUNNER_MAIL', Tools::getValue('PRICERUNNER_MAIL'));
+            
             if ($this->completeRegistration()) {
-              Configuration::updateValue('PRICERUNNER_PLUGIN_ACTIVATED', 1);
-              $this->html .= $this->displayConfirmation($this->l('Thank you for your application, you will be contacted by Pricerunner soon'));
+                Configuration::updateValue('PRICERUNNER_PLUGIN_ACTIVATED', 1);
+                $this->html .= $this->displayConfirmation($this->l('Thank you for your application, you will be contacted by Pricerunner soon'));
             }
         }
 
@@ -249,20 +261,20 @@
          * Function that configures module database keys.
          * For use on installation of module.
          */
-        private function populateConfiguration()  {
-          Configuration::updateValue('PRICERUNNER_DOMAIN', _PS_BASE_URL_);
-          Configuration::updateValue('PRICERUNNER_NAME', Configuration::get('PS_SHOP_NAME'));
-          Configuration::updateValue('PRICERUNNER_MAIL', Configuration::get('PS_SHOP_EMAIL'));
-          $this->createHashIfEmpty();
+        private function populateConfiguration()
+        {
+            Configuration::updateValue('PRICERUNNER_DOMAIN', _PS_BASE_URL_);
+            Configuration::updateValue('PRICERUNNER_NAME', Configuration::get('PS_SHOP_NAME'));
+            Configuration::updateValue('PRICERUNNER_MAIL', Configuration::get('PS_SHOP_EMAIL'));
+            $this->createHashIfEmpty();
+
+            return true;
         }
 
 
         public function install()
         {
-          if (
-            !parent::install() ||
-            !$this->populateConfiguration()
-          ) {
+            if (!parent::install() || !$this->populateConfiguration()) {
                 return false;
             }
 
