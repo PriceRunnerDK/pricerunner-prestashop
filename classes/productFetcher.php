@@ -45,6 +45,9 @@ class ProductFetcher
         $products = array();
 
         foreach ($productRows as $productData) {
+            if ($productData['reference'] == '') {
+                $productData['reference'] = $productData['id_product'];
+            }
             $products = array_merge($products, $this->createPricerunnerProducts($productData));
         }
 
